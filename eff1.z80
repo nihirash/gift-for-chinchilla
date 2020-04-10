@@ -1,0 +1,173 @@
+
+eff1:
+    halt
+    call intCla
+    halt
+    call showNekoHeader
+    ld a, 1, (isGigaScreen), a, (disablePlayer), a
+    ld hl, eff1Bg, (bgTask), hl
+    
+    ld hl, eff1Interp : call initInterpreter
+
+.loop
+    halt
+    ld a, #11 : ld bc, #7ffd: out (c), a
+
+    call interpStep
+    call #c005
+    ld a, (interpActive) : and a : jr z, .finish
+    jp .loop
+    ret
+.finish
+    halt
+    ld a, 0, (disablePlayer), a, (isGigaScreen), a, hl, 0, (bgTask), hl
+    ld b, 216 : ld hl, 0 : add hl, sp : ld (sp_save), hl
+    di
+    ld sp, #DB00
+    ld hl, 0
+.clean
+    dup 16
+    push hl
+    edup
+    dec b
+    jp nz, .clean
+    ld hl, (sp_save)
+    ld sp, hl
+    ld a, (cur_bank) : xor swap_screen : call setBank
+    ei
+    ret
+
+eff1Bg:
+    ld hl, 0
+    add hl, sp
+    ld (sp_save), hl
+    ld a, #ff
+
+    ld d, a : ld e, d
+fill: 
+    ld sp, #5800
+  
+drawFiller:
+    ld b, 8
+    ld a, (ornament)
+    ld l, a, h, a 
+    ld a, (ornament_step)
+    inc a
+.loop
+    ld d, h, e, l
+    cp b 
+    jr nz, .drawLine
+    ld de, #ffff
+.drawLine
+    dup 128
+    push de
+    edup
+    dec b
+    jp nz, .loop
+again:
+    ld b, 8
+    ld a, (ornament)
+    ld l, a, h, a 
+    ld a, (ornament_step)
+    inc a
+.loop
+    ld d, h, e, l
+    cp b 
+    jr nz, .drawLine
+    ld de, #ffff
+.drawLine
+    dup 128
+    push de
+    edup
+    dec b
+    jp nz, .loop
+    
+    ld bc, 30 ; 10
+.wloop	
+	dec bc ; 6
+	ld a, b : or c : jr nz, .wloop ; 20
+	
+    ld a, #17 : ld bc, #7ffd : out (c), a 
+    
+    ld hl, ornament
+    rrc (hl)
+    inc hl
+    ld a, (hl)
+    inc a
+    cp 8 : jr c, .write
+    xor a
+.write
+    ld (hl), a
+
+    ld hl, (sp_save)
+    ld sp, hl
+    ret
+
+sp_save dw 0
+ornament db 3
+ornament_step db 0
+
+p1 db "SANQ!", 0
+p2 db "S", 0
+p3 db "DR", 0
+p4 db "TEBQ",  0
+p5 db "VELA@", 0
+p6 db " TEBE", 0
+p7 db "KRUTYH", 0
+p8 db " KU^U ", 0
+p9 db "UDA^I", 0
+
+computer_spr
+    db #01,  #3f,  #3f,  #3f,  #3f,  #01  
+    db #01,  #3f,  #6d,  #6d,  #3f,  #01  
+    db #01,  #3f,  #2d,  #2d,  #3f,  #01  
+    db #01,  #3f,  #3f,  #3f,  #3f,  #01  
+    db #7f,  #7f,  #7f,  #7f,  #7f,  #3f  
+    db #3f,  #3f,  #3f,  #3f,  #3f,  #3f
+
+
+; Effect 1 program
+eff1Interp:
+    iSetAttr %01001001
+    iPrint #0A05, p1
+    iNop #7f
+    iCla
+    iSetAttr %01101101
+    iPrint #0A0B, p2
+    iNop #7f
+    iCla
+    iSetAttr %01111111
+    iPrint #0805, p3
+    iNop #7f
+    iSetAttr %01010010
+    iPrint #0F0D, p4    
+    iNop #7f
+    iScrollLeft 32, 7
+    iScrollRight 20, 8
+    iScrollLeft 32, 9
+    iScrollRight 20, 10
+    iScrollLeft 32, 11
+    iScrollRight 20, 12
+    iScrollLeft 32, 13
+    iScrollRight 20, 14
+    iNop 50
+    iCla
+    iSetAttr %01101101
+    iPrint #0A02, p5
+    iNop 80
+    iSetAttr %00111111
+    iPrint #0A02, p6
+    iNop #7f
+    iCla
+    iSetAttr %01100100
+    iPrint #0901, p7
+    intPutSprite #1110, computer_spr
+    iNop #7F
+    iCla
+    iSetAttr %01011011
+    iPrint #0801, p8
+    iNop 50
+    iPrint #1003, p9
+    iNop #FF
+
+    iEnd

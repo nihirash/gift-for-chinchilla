@@ -1,0 +1,18 @@
+
+showNekoHeader:
+    ld a, 7 : call setBank
+    ld hl, top1nekoa, de, #58ff : call dzx7
+    ld hl, top1nekop, de, #47ff : call dzx7
+    halt
+    ld hl, top2nekoa, de, #d8ff : call dzx7
+    ld hl, top2nekop, de, #c7ff : call dzx7
+    ret 
+
+    incbin "neko/h1.a"
+top1nekoa = $ - 1
+    incbin "neko/h1.p"
+top1nekop = $ - 1
+    incbin "neko/h2.a"
+top2nekoa = $ - 1
+    incbin "neko/h2.p"
+top2nekop = $ - 1

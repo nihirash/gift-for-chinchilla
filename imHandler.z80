@@ -1,0 +1,27 @@
+
+imHandler:
+    push af : push bc : push de : push hl ; 44t
+    ld a, (isGigaScreen) : and a : jr z, .skipGiga ; 29/24t ... sum = 68
+    ld a, (cur_bank) : xor swap_screen : call setBank ; 37t ... sum = 105t
+.skipGiga
+    ld hl, (bgTask)
+    ld a, l : or h : jr nz, .execBg
+.exitBgTask
+    ld a, (disablePlayer) : and a : jr nz, .endInt
+    ld a, (cur_bank) : and swap_screen : or 17 : ld bc, #7ffd : out (c), a
+    call #c005
+    ld a, (cur_bank) : ld bc, #7ffd : out (c), a
+.endInt
+    pop hl, de, bc, af
+    ei 
+    ret
+    
+.execBg
+    ld (.j + 1), hl
+.j   call 0
+    jr .exitBgTask
+
+disablePlayer db 0 
+bgTask  dw 0
+isBorderLines db 1
+isGigaScreen db 0

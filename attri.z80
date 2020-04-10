@@ -1,0 +1,151 @@
+; HL - pointer to program
+initInterpreter:
+    ld (interpPtr), hl, a, 1, (interpActive), a
+    ret
+
+interpStep:
+    ld a, (interpActive) : and a : ret z ; if it ends - do nothings
+
+    ld ix, (interpPtr)
+    ld a, (ix + 1) : and a : jr z, .nextStep
+    dec a : ld (ix + 1), a
+    ld a, (ix)
+    rla 
+    ld h, HIGH interpTable : ld l, a
+    ld a, (hl) : inc hl : ld h, (hl): ld l, a
+    jp (hl)
+
+.nextStep
+    ld b, 0 : ld c, (ix + 2) : add ix, bc
+    ld (interpPtr), ix
+    jr interpStep
+
+intNop:
+    ret
+
+intPrint:
+    ld e, (ix + 3), d, (ix + 4), l, (ix + 5), h, (ix + 6)
+    call printAttr
+    ret
+
+intCla:
+    ld a, 1, hl, #5900, de, #5901, bc, 511, (hl), a
+    ldir
+    ret 
+
+intEnd:
+    xor a : ld (interpActive), a
+    ret
+
+intSetAttr:
+    ld a, (ix + 3)
+    ld (attrCharColor), a
+    ret
+
+intScrollLeft:
+    ld a, (ix + 3)
+    ld h, 0 : ld l, a 
+    add hl, hl : add hl, hl : add hl, hl: add hl, hl : add hl, hl
+    ld de, #5900 : add hl, de 
+    ld de, hl
+    inc hl
+    ld a, 1
+    dup 31
+        ldi
+    edup
+    ld (de), a
+    ret 
+
+intScrollRight:
+    ld a, (ix + 3)
+    ld h, 0 : ld l, a 
+    add hl, hl : add hl, hl : add hl, hl: add hl, hl : add hl, hl
+    ld de, #591F : add hl, de 
+    ld de, hl
+    dec hl
+    ld a, 1
+    ld (de), a
+    dup 30
+        ldd
+    edup
+    ret
+
+intPutSprite:
+    ld e, (ix + 3) : ld d, (ix + 4)
+    call xyToAttr
+    ld e, (ix + 5) : ld d, (ix + 6)
+    ex hl, de
+    dup 6
+    ldi : ldi : ldi : ldi : ldi : ldi
+    ex hl, de
+    push de
+    ld de, 26
+    add hl, de
+    ex hl, de
+    pop hl
+    edup
+    ret
+
+
+interpPtr    dw 0
+interpActive db 0
+
+    ALIGN 256
+interpTable
+    dw intNop ; 0
+    dw intPrint ; 1
+    dw intCla ; 2 
+    dw intEnd ; 3
+    dw intSetAttr ; 4
+    dw intScrollLeft ; 5
+    dw intScrollRight ; 6
+    dw intPutSprite ; 7
+
+;; Interpreter constants
+CMD_NOP = 0
+CMD_PRINT = 1
+CMD_CLA = 2
+CMD_END = 3
+CMD_SET_ATTR = 4
+CMD_SCROLL_LEFT = 5
+CMD_SCROLL_RIGHT = 6
+CMD_PUT_SPRITE = 7
+;; Interpreter mnemonics
+    MACRO iNop frames
+        db  CMD_NOP, frames, 3
+    ENDM
+
+    MACRO iPrint coords, text_ptr
+        db CMD_PRINT, 1, 7
+        dw coords  
+        dw text_ptr
+    ENDM
+
+    MACRO iCla
+        db CMD_CLA, 1, 3
+    ENDM
+
+    MACRO iEnd
+        db CMD_END, 1, 3
+    ENDM
+
+    MACRO iSetAttr ink
+        db CMD_SET_ATTR, 1, 4
+        db ink
+    ENDM
+
+    MACRO iScrollLeft count, line
+        db CMD_SCROLL_LEFT, count, 4
+        db line
+    ENDM
+
+    MACRO iScrollRight count, line
+        db CMD_SCROLL_RIGHT, count, 4
+        db line
+    ENDM
+
+    MACRO intPutSprite coords, sprite
+        db CMD_PUT_SPRITE, 1, 7
+        dw coords
+        dw sprite
+    ENDM
