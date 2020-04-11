@@ -107,15 +107,18 @@ sp_save dw 0
 ornament db 3
 ornament_step db 0
 
-p1 db "SANQ!", 0
-p2 db "S", 0
-p3 db "DR", 0
-p4 db "TEBQ",  0
-p5 db "VELA@", 0
-p6 db " TEBE", 0
-p7 db "KRUTYH", 0
-p8 db " KU^U ", 0
-p9 db "UDA^I", 0
+p1 db  "SANQ!", 0
+p2 db  "S", 0
+p3 db  "DR", 0
+p4 db  "TEBQ",  0
+p5 db  "VELA@", 0
+p6 db  " TEBE", 0
+p7 db  "KRUTYH", 0
+p8 db  " KU^U ", 0
+p9 db  "UDA^I", 0
+p10 db "  I  ", 0
+p11 db "PROSTO", 0
+p12 db "]ASTXQ", 0
 
 computer_spr
     db #01,  #3f,  #3f,  #3f,  #3f,  #01  
@@ -169,5 +172,24 @@ eff1Interp:
     iNop 50
     iPrint #1003, p9
     iNop #FF
-
+    iCla
+    iSetAttr %00111111
+    iPrint #0803, p10
+    iNop #7f
+    iCla
+    iSetAttr %01010010
+    iPrint #0802, p11
+    iNop #7f
+    iSetAttr %01011011
+    iPrint #0F02, p12
+    iNop #7f
+    iScrollLeft 32, 7
+    iScrollRight 32, 8
+    iScrollLeft 32, 9
+    iScrollRight 32, 10
+    iScrollLeft 32, 11
+    iScrollRight 32, 12
+    iScrollLeft 32, 13
+    iScrollRight 32, 14
+    iNop 50
     iEnd

@@ -1,3 +1,86 @@
-eff2Start:
 
+message db "TUT TEKST POZDRAWLENIJ I TAK DALEE!!    URA URA!!! HA HA HA HA       ",0
+scroll_ptr dw message
+scroll_addr dw #50DF
+tempchar db  0,0,0,0,0,0,0,0
+
+eff2:
+    halt
+    ld a, 7 : call setBank
+    xor a : ld (isGigaScreen), a
+    ld hl, anime1, de, #daff : call dzx7
+    halt
+    ld a, 7 + swap_screen : call setBank
+    ld hl, anime2, de, #5aff : call dzx7
+    ld a, 1, (isGigaScreen), a, a, 7  : call setBank : halt
+.loop
+    call nextchar
+    ld hl, #50df
+    ld (scroll_addr), hl
+    call scrollEntry
+    ld hl, #d0df
+    ld (scroll_addr), hl
+    call nextchar
+    halt
+    call scrollEntry
+    
+    ld hl, (scroll_ptr)
+    inc hl
+    ld (scroll_ptr), hl
+    halt
+    jr .loop
+    
+
+restart:
+    ld hl,message
+    ld (scroll_ptr), hl
+nextchar:
+    ld hl, (scroll_ptr)
+    ld a,(hl)
+    or a
+    jr z,restart
+
+    ld l,a
+    ld h,0
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,font
+    add hl,de
+
+    ld de,tempchar
+    ld bc,8
+    ldir
     ret
+
+scrollEntry:
+    ld a, 5
+scroll:
+    ld hl,(scroll_addr)
+    ld de,tempchar
+    ld c,8
+nextrow:
+    ex de,hl
+    rl (hl)
+    ex de,hl
+    ld b,32
+    push hl
+scrollrow:
+    rl (hl)
+    dec l
+    djnz scrollrow
+    pop hl
+    inc h
+    inc de
+    dec c
+    jr nz,nextrow
+    dec a
+    jr nz,scroll
+    ret
+
+
+    incbin "anime.1"
+anime1 equ $ - 1
+    incbin "anime.2"
+anime2 equ $ - 1
+    DISPLAY "ANIME ENDS", $

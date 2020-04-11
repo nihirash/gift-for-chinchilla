@@ -9,13 +9,13 @@ start:
     ei
     ld bc, 6912, de, #4000, hl, face : ldir
     ld a, 1, (isGigaScreen), a
-    ld bc, #fa ; 10 seconds
+    ld b, 250 ; 5 seconds
 .loop:
     halt
     djnz .loop
     call eff1
     call eff2
-
+    jr $
     include "utils.z80"
     include "attr.z80"
     include "attri.z80"
