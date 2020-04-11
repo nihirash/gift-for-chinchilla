@@ -1,5 +1,7 @@
     DEVICE ZXSPECTRUM128
-    org 28000
+    org 30000
+font equ $ - 32 * 8
+    incbin "font.bin"
 start:
     di
     xor a : out (#fe), a: ld bc, 6911, hl, #4000, de, #4001, (hl), a : ldir 
@@ -14,21 +16,21 @@ start:
     halt
     djnz .loop
     call eff1
-    call eff2
-    jr $
+    jp eff2
+
     include "utils.z80"
     include "attr.z80"
     include "attri.z80"
     include "neko/neko.z80"
+
+
     include "ext/dzx7b.asm"
-    include "imHandler.z80"
     include "eff1.z80"
     include "eff2.z80"
+    include "imHandler.z80"
 face:
     incbin "face.1"
 
-font equ $ - 32 * 8
-    incbin "font.bin"
     DISPLAY $
 
     PAGE 1

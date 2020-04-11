@@ -82,7 +82,7 @@ again:
     dec b
     jp nz, .loop
     
-    ld bc, 30 ; 10
+    ld bc, 100 ; 10
 .wloop	
 	dec bc ; 6
 	ld a, b : or c : jr nz, .wloop ; 20
